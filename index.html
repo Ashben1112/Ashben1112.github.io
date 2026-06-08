@@ -1,1 +1,786 @@
-hello world
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理猜猜樂 終極大滿貫版 🌍</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe, #ccfbf1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        .page-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .decor-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            padding: 20px;
+            pointer-events: none;
+        }
+        .decor-side .icon {
+            font-size: 100px;
+            filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.1));
+            animation: float 3s ease-in-out infinite;
+        }
+        .decor-side .icon:nth-child(2) { animation-delay: 1.5s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @media (max-width: 850px) { .decor-side { display: none; } }
+
+        .container {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+            text-align: center;
+            width: 550px;
+            max-width: 100%;
+            box-sizing: border-box;
+            border: 4px solid #38bdf8;
+            position: relative;
+        }
+
+        .cover-content { padding: 20px 0; }
+        .cover-title {
+            font-size: 40px;
+            font-weight: 900;
+            color: #0284c7;
+            margin: 0 0 10px 0;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0px #e0f2fe;
+            animation: pulseTitle 2.5s ease-in-out infinite;
+        }
+        .cover-subtitle {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 40px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        .start-game-btn {
+            display: inline-block;
+            width: 85%;
+            padding: 18px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .start-game-btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+            background: linear-gradient(135deg, #38bdf8, #2563eb);
+        }
+
+        h2 { font-size: 22px; color: #0369a1; margin-bottom: 25px; font-weight: bold; }
+        
+        .region-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
+        }
+        .menu-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(2, 132, 199, 0.3);
+        }
+        
+        .hidden { display: none !important; }
+        .question { font-size: 22px; font-weight: bold; margin-bottom: 25px; color: #334155; line-height: 1.5; }
+        
+        .timer-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: #ef4444;
+            transition: width 0.1s linear;
+        }
+
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+        
+        .option-btn {
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            text-align: center;
+        }
+        .option-btn:hover { background-color: #f0fdfa; border-color: #99f6e4; }
+        
+        .input-area { margin-bottom: 20px; }
+        .text-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #0d9488;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .result { font-weight: bold; margin-top: 15px; font-size: 22px; }
+        
+        .explanation-scroll {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding-right: 5px;
+        }
+        .explanation-item {
+            background-color: #f8fafc;
+            border-left: 4px solid #94a3b8;
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #334155;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .explanation-item.correct-ans {
+            background-color: #f0fdf4;
+            border-left-color: #10b981;
+            color: #14532d;
+        }
+        .next-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .evaluation-box {
+            background: #f0fdfa;
+            border: 2px dashed #0d9488;
+            padding: 20px;
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+        .evaluation-title { font-size: 24px; font-weight: bold; color: #0d9488; margin-bottom: 10px; }
+        .evaluation-desc { font-size: 16px; color: #334155; line-height: 1.6; }
+
+        .score { font-size: 14px; color: #64748b; margin-top: 20px; font-weight: bold; }
+        .back-btn {
+            background: none; border: none; color: #64748b; cursor: pointer; 
+            margin-top: 20px; text-decoration: underline; font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-layout">
+    <div class="decor-side"><div class="icon">🌍</div><div class="icon">🧳</div></div>
+
+    <div class="container">
+        <div id="screen-cover">
+            <div class="cover-content">
+                <h1 class="cover-title">地理猜猜樂</h1>
+                <div class="cover-subtitle">全球 244 國家大滿貫 • 終極動態干擾版</div>
+                <button class="start-game-btn" onclick="showScreen('region')">開始挑戰 ➔</button>
+            </div>
+        </div>
+
+        <div id="screen-region" class="hidden">
+            <h2>請選擇挑戰分區</h2>
+            <div class="region-grid">
+                <button class="menu-btn" onclick="selectRegion('asia')">亞洲篇 🗺️</button>
+                <button class="menu-btn" onclick="selectRegion('europe')">歐洲篇 🏰</button>
+                <button class="menu-btn" onclick="selectRegion('africa')">非洲篇 🦁</button>
+                <button class="menu-btn" onclick="selectRegion('america')">美洲篇 🦅</button>
+                <button class="menu-btn" onclick="selectRegion('oceania')">大洋洲篇 🏄</button>
+            </div>
+            <button class="menu-btn" style="background: linear-gradient(135deg, #a855f7, #6b21a8);" onclick="selectRegion('world')">世界綜合篇 🌍</button>
+            <button class="back-btn" onclick="showScreen('cover')">返回首頁</button>
+        </div>
+        
+        <div id="screen-mode" class="hidden">
+            <h2>請選擇挑戰題型</h2>
+            <button class="menu-btn" onclick="selectMode('choice')">選擇題模式</button>
+            <button class="menu-btn" onclick="selectMode('input')">問答題模式</button>
+            <button class="menu-btn" onclick="selectMode('mix')">混合題模式</button>
+            <button class="back-btn" onclick="showScreen('region')">返回選擇分區</button>
+        </div>
+
+        <div id="screen-count" class="hidden">
+            <h2>請選擇挑戰題數</h2>
+            <div id="count-hint" style="font-size:14px; color:#64748b; margin-bottom:15px;"></div>
+            <button class="menu-btn" onclick="startGame(10)">10 題</button>
+            <button class="menu-btn" onclick="startGame(20)">20 題</button>
+            <button class="menu-btn" onclick="startGame(30)">30 題</button>
+            <button class="back-btn" onclick="showScreen('mode')">返回選擇題型</button>
+        </div>
+
+        <div id="screen-game" class="hidden">
+            <div class="timer-bar-container"><div id="timer-indicator" class="timer-bar"></div></div>
+            <div class="question" id="question-text">題目載入中...</div>
+            <div class="options-grid" id="options-container"></div>
+            
+            <div class="input-area" id="input-container">
+                <input type="text" class="text-input" id="answer-input" placeholder="請輸入首都名稱..." autocomplete="off">
+                <button class="submit-btn" onclick="checkInputAnswer()">提交答案</button>
+            </div>
+
+            <div id="feedback-area" class="hidden">
+                <div class="result" id="result-text"></div>
+                <div class="explanation-scroll" id="explanations-list"></div>
+                <button class="next-btn" onclick="loadNextQuestion()">下一題 ➔</button>
+            </div>
+
+            <div class="score" id="score-text">分數: 0 / 0</div>
+            <button class="back-btn" onclick="abortGame()">放棄並返回</button>
+        </div>
+
+        <div id="screen-end" class="hidden">
+            <h2>🏆 挑戰終結 🏆</h2>
+            <div id="final-score-text" style="font-size: 22px; font-weight: bold;"></div>
+            <div class="evaluation-box">
+                <div id="evaluation-title" class="evaluation-title"></div>
+                <div id="evaluation-desc" class="evaluation-desc"></div>
+            </div>
+            <button class="menu-btn" onclick="showScreen('region')">再挑戰一次</button>
+            <button class="back-btn" onclick="showScreen('cover')">返回主封面</button>
+        </div>
+    </div>
+
+    <div class="decor-side"><div class="icon">✈️</div><div class="icon">🧭</div></div>
+</div>
+
+<script>
+    // 🌍 全球 244 國家與地區超極緻百科資料庫
+    const globalDatabase = {
+        asia: [
+            { c: "日本", a: "東京", d: "全球人口密度最高的超級都市圈之一，也是日本的政治、經濟與文化核心。" },
+            { c: "南韓", a: "首爾", d: "位於漢江之畔，是一座歷史古蹟與頂尖現代科技並存的國際大都市。" },
+            { c: "中國", a: "北京", d: "擁有三千多年歷史的文化古都，著名的故宮、天安門與長城皆位於此。" },
+            { c: "泰國", a: "曼谷", d: "擁有金碧輝煌的玉佛寺與豐富迷人的東南亞水上市場文化。" },
+            { c: "新加坡", a: "新加坡", d: "著名的城市國家與綠色花園城市，也是全球最具競爭力的金融港口中心。" },
+            { c: "越南", a: "河內", d: "建城歷史超過千年，充滿了優雅的法式殖民建築與亞洲傳統摩托車流。" },
+            { c: "印度", a: "新德里", d: "位於德里大都會區內，由英國殖民時期精心規劃，洋溢著政治中心氣息。" },
+            { c: "馬來西亞", a: "吉隆坡", d: "以舉世聞名的雙峰塔（雙子星大樓）為地標，融合馬來、華人與印度文化。" },
+            { c: "印尼", a: "雅加達", d: "東南亞第一大城，由於面臨嚴重的地層下陷問題，計畫未來將逐步遷都。" },
+            { c: "菲律賓", a: "馬尼拉", d: "緊鄰馬尼拉灣，擁有古老的西班牙王城古蹟，是西太平洋重要的貿易門戶。" },
+            { c: "不丹", a: "廷布", d: "位於高海拔喜馬拉雅山區，是全球極少數完全沒有裝設紅綠燈的首都。" },
+            { c: "尼泊爾", a: "加德滿都", d: "被譽為『寺廟之城』，是前往喜馬拉雅山登山客的集散大本營。" },
+            { c: "孟加拉", a: "達卡", d: "世界上人口密度極高的超級城市，也以五彩繽紛的人力三輪車文化名揚國際。" },
+            { c: "蒙古", a: "烏蘭巴托", d: "容納了全國一半以上的人口。它是全世界上平均氣溫最寒冷的國家首都。" },
+            { c: "北韓", a: "平壤", d: "位於大同江畔，充滿了高聳的社會主義紀念碑與整齊劃一的摩天高樓。" },
+            { c: "哈薩克", a: "阿斯塔納", d: "是一座由現代前衛建築與未來感摩天大樓組成的中亞新興規劃城市。" },
+            { c: "烏茲別克", a: "塔什干", d: "中亞地區歷史悠久的綠洲大城，是古代絲綢之路上重要的貿易中轉站。" },
+            { c: "塔吉克", a: "迪尚貝", d: "城市名字在當地語言中代表星期一，最早由一個熱鬧的星期一市集發展而來。" },
+            { c: "土庫曼", a: "阿什哈巴特", d: "以擁有世界上密度最高的白色大理石建築而創下金氏世界紀錄。" },
+            { c: "吉爾吉斯", a: "比斯凱克", d: "位於天山山脈北麓，是一座綠樹成蔭、充滿寬廣林蔭大道的典型中亞花園城市。" },
+            { c: "柬埔寨", a: "金邊", d: "座落於湄公河畔，擁有宏偉的柬埔寨皇宮，歷史上曾被譽為亞洲珍珠。" },
+            { c: "寮國", a: "萬象", d: "又名永珍，位於湄公河畔與泰國隔河相望，是一座充滿悠閒佛教氣息的首都。" },
+            { c: "中華民國(台灣)", a: "台北", d: "以高科技半導體產業、著名的台北101與豐富的美食夜市文化享譽全球。" },
+            { c: "斯里蘭卡", a: "可倫坡", d: "印度洋上的熱帶港口大城，盛產高檔紅茶，政治實質首都為鄰近的斯里賈亞瓦德納普拉科特。" },
+            { c: "馬爾地夫", a: "馬累", d: "位於印度洋上的環礁海島首都，是全球海拔最低的城市之一，也是度假天堂。" },
+            { c: "巴基斯坦", a: "伊斯蘭馬巴德", d: "1960年代全新規劃的現代化內陸首都，取代了舊都沿海的喀拉蚩。" },
+            { c: "阿富汗", a: "喀布爾", d: "位於高海拔興都庫什山脈峽谷中的千年古城，歷史上是兵家必爭的戰略要地。" },
+            { c: "伊朗", a: "德黑蘭", d: "背靠巍峨的阿爾博茲山脈，是西亞最大的都市之一，充滿波斯帝國的歷史底蘊。" },
+            { c: "伊拉克", a: "巴格達", d: "位於底格里斯河畔，曾是伊斯蘭黃金時代的文化與學術中心，歷史悠久。" },
+            { c: "敘利亞", a: "大馬士革", d: "被普遍認為是世界上歷史最悠久且一直有人居住的古老首都。" },
+            { c: "約旦", a: "安曼", d: "一座融合了古羅馬劇場古蹟與現代阿拉伯風情的山城首都。" },
+            { c: "黎巴嫩", a: "貝魯特", d: "地中海東岸的地標地，歷史上因商業文化繁榮曾被譽為中東的巴黎。" },
+            { c: "以色列", a: "耶路撒冷", d: "三大宗教（基督教、猶太教、伊斯蘭教）的共同聖地，歷史糾葛與文化極為深厚。" },
+            { c: "巴勒斯坦", a: "拉馬拉", d: "目前的中央政府實質所在地，但主張法理首都在耶路撒冷東部。" },
+            { c: "沙烏地阿拉伯", a: "利雅德", d: "位於阿拉伯半島中央的綠洲上，如今已蛻變為充滿現代摩天大樓的石油經濟巨城。" },
+            { c: "阿聯酋", a: "阿布達比", d: "阿拉伯聯合大公國的首都與政治核心，財力驚人，鄰近的杜拜則是其第一大城。" },
+            { c: "卡達", a: "杜哈", d: "波斯灣畔的現代化新興城市，曾舉辦過世界盃足球賽，以波斯灣明珠著稱。" },
+            { c: "巴林", a: "麥納麥", d: "島國巴林的金融中心，也是波斯灣歷史上著名的珍珠貿易港口。" },
+            { c: "科威特", a: "科威特城", d: "緊鄰波威特灣，以獨特的科威特塔作為國家現代化發展的代表性地標。" },
+            { c: "阿曼", a: "馬斯喀特", d: "依山傍海的古老港口，保留了大量阿拉伯傳統低矮白色建築，極具風情。" },
+            { c: "葉門", a: "沙那", d: "其老城區以獨特的泥磚與白色石膏雕刻高層建築被列為世界文化遺產。" },
+            { c: "賽普勒斯", a: "尼科西亞", d: "地中海島國，目前是世界上唯一一座仍被地緣政治線『一分為二』的分裂首都。" },
+            { c: "亞美尼亞", a: "葉里溫", d: "外號粉紅之城，因為市內大量建築採用當地特有的粉紅色火山凝灰岩建成。" },
+            { c: "亞塞拜然", a: "巴庫", d: "位於裏海之畔，是低於海平面的低海拔首都，以火焰塔與豐富的石油資源聞名。" },
+            { c: "喬治亞", a: "提比里斯", d: "位於高加索峽谷中，以古老的水療溫泉、高加索紅酒文化與多元建築風格聞名。" },
+            { c: "東帝汶", a: "帝利", d: "東南亞最年輕的國家首都之一，面臨班達海，保有深厚的葡萄牙殖民歷史遺跡。" },
+            { c: "緬甸", a: "奈比多", d: "2005年軍政府秘密在內陸森林中建造的全新首都，寬闊的馬路幾乎沒有車輛。" },
+            { c: "汶萊", a: "斯里巴加灣", d: "擁有東南亞極具規模的黃金圓頂清真寺與龐大的傳統水上村落文化。" }
+        ],
+        europe: [
+            { c: "冰島", a: "雷克雅維克", d: "全世界地理位置最北端的國家首都，全市供暖100%來自天然純淨的地熱。" },
+            { c: "丹麥", a: "哥本哈根", d: "被譽為童話之鄉與最幸福城市，著名的小美人魚雕像與趣伏里樂園皆位於此。" },
+            { c: "瑞典", a: "斯德哥爾摩", d: "由14個島嶼與超過50座橋樑串聯組成的美麗水上都市，也是諾貝爾獎頒獎地。" },
+            { c: "芬蘭", a: "赫爾辛基", d: "緊鄰波羅的海，有波羅的海女兒之美譽，設計與現代建築風格十分強烈。" },
+            { c: "挪威", a: "奧斯陸", d: "被森林和峽灣環繞的生態綠能城市，同時也是每年頒發諾貝爾和平獎的聖地。" },
+            { c: "波蘭", a: "華沙", d: "二戰後居民依據歷史畫作奇蹟般完美重建了古城，被列入世界文化遺產。" },
+            { c: "奧地利", a: "維也納", d: "世界著名的音樂之都，莫扎特與貝多芬的故鄉，常年被評為世界最宜居城市。" },
+            { c: "匈牙利", a: "布達佩斯", d: "由多瑙河兩岸的布達與佩斯合併而成，有多瑙河畔明珠之美稱。" },
+            { c: "捷克", a: "布拉格", d: "整座城市保留了極為完整的波西米亞紅屋頂與哥德式城堡，被譽為百塔之城。" },
+            { c: "英國", a: "倫敦", d: "底蘊深厚的昔日帝國之都，大笨鐘、倫敦眼與大英博物館吸引全球無數遊客。" },
+            { c: "法國", a: "巴黎", d: "世界時尚與藝術之都，艾菲爾鐵塔、羅浮宮與凱旋門交織出無與倫比的浪漫情懷。" },
+            { c: "德國", a: "柏林", d: "曾因柏林圍牆經歷冷戰分裂，如今蛻變為前衛、多元且極具歷史厚重感的文化重鎮。" },
+            { c: "義大利", a: "羅馬", d: "條條大路通羅馬，城內隨處可見羅馬競技場等千年古蹟，內有國中國梵蒂岡。" },
+            { c: "西班牙", a: "馬德里", d: "位於伊比利半島中心的高原上，以熱情的佛朗明哥舞與皇宮聞名。" },
+            { c: "瑞士", a: "伯恩", d: "瑞士法理上無首都，伯恩為其聯邦城（實質政治中心），古城區極具中世紀風情。" },
+            { c: "土耳其", a: "安卡拉", d: "雖然伊斯坦堡最出名，但土耳其立國時為了國防安全，將首都定在內陸的安卡拉。" },
+            { c: "葡萄牙", a: "里斯本", d: "美麗的大航海時代歐西門戶，以獨特的復古黃色電車、碎石路與香濃蛋塔聞名。" },
+            { c: "比利時", a: "布魯塞爾", d: "同時也是歐盟（EU）與北約（NATO）的總部所在地，被稱為歐洲首都。" },
+            { c: "荷蘭", a: "阿姆斯特丹", d: "以錯綜複雜的運河網絡、無數的自行車、鬱金香和豐富的藝術珍藏聞名。" },
+            { c: "愛爾蘭", a: "都柏林", d: "利菲河畔的文學之都，以發達的高科技產業、健力士黑啤與愛爾蘭酒吧文化著稱。" },
+            { c: "希臘", a: "雅典", d: "西方文明與民主的搖籃，衛城帕德嫩神廟雄踞市中心，歷史橫跨三千年。" },
+            { c: "盧森堡", a: "盧森堡市", d: "千堡之國的首都，整座城市建於峽谷峭壁之上，金融業極度發達。" },
+            { c: "摩納哥", a: "摩納哥", d: "世界上地狹人稠的蔚藍海岸賭王之國，以F1賽車街道賽與豪華遊艇港聞名。" },
+            { c: "梵蒂岡", a: "梵蒂岡城", d: "全球面積最小的領土國家，天主教的天使之城，聖伯多祿大殿所在地。" },
+            { c: "聖馬利諾", a: "聖馬利諾", d: "世界上最古老的現存共和國，依蒂塔諾山而建的國中國城堡。" },
+            { c: "安道爾", a: "安道爾城", d: "位於庇里牛斯山脈深處的高山避稅天堂，以滑雪勝地與免稅購物聞名。" },
+            { c: "列支敦斯登", a: "瓦杜茲", d: "萊茵河谷中的微型富裕郵票小國，高聳的萊茵城堡是親王居住地。" },
+            { c: "馬爾他", a: "瓦萊塔", d: "地中海的心臟島國，整座城市由巴洛克式黃色石材城堡築成，是活歷史博物館。" },
+            { c: "俄羅斯", a: "莫斯科", d: "東歐巨型都市，紅場、克里姆林宮與色彩繽紛的聖瓦西里大教堂是其國家象徵。" },
+            { c: "烏克蘭", a: "基輔", d: "第聶伯河畔的東斯拉夫古文化發源地，擁有金色圓頂的聖索菲亞大教堂。" },
+            { c: "白俄羅斯", a: "明斯克", d: "二戰後完全依照經典斯大林主義風格，全新規劃重建的宏偉整齊都市。" },
+            { c: "羅馬尼亞", a: "布加勒斯特", d: "有東方小巴黎之稱，市內擁有舉世震驚、體積龐大的巨型建築人民宮。" },
+            { c: "保加利亞", a: "索非亞", d: "位於巴爾幹山谷，外號玫瑰之國首都，擁有悠久的溫泉文化與古老教堂。" },
+            { c: "塞爾維亞", a: "貝爾格勒", d: "位於多瑙河與薩瓦河交匯處，巴爾幹半島的關鍵戰略大城，歷史征戰不斷。" },
+            { c: "克羅埃西亞", a: "薩格勒布", d: "充滿奧匈帝國風格的內陸文化城，以獨特的失戀博物館觀光聞名。" },
+            { c: "斯洛維尼亞", a: "盧比安納", d: "外號飛龍之城，是一座推行綠能環保、充滿大學人文氣息的精緻歐洲首都。" },
+            { c: "斯洛伐克", a: "布拉提斯拉瓦", d: "緊鄰多瑙河，與奧地利維也納距離極近，老城區內有許多趣味街頭青銅雕像。" },
+            { c: "愛沙尼亞", a: "塔林", d: "波羅的海數位大國，其保留極其完好的中世紀北歐圍牆古城是世界遺產。" },
+            { c: "拉脫維亞", a: "里加", d: "波羅的海跳動的心臟，以擁有大量精美華麗的新藝術風格建築聞名於世。" },
+            { c: "立陶宛", a: "維爾紐斯", d: "擁有全歐洲極具規模的巴洛克老城區，市郊有著浪漫的特拉凱水上城堡。" },
+            { c: "阿爾巴尼亞", a: "地拉那", d: "充滿色彩繽紛外牆建築的巴爾幹都市，展現出告別過去陰暗走向活力的新氣象。" },
+            { c: "北馬其頓", a: "史高比耶", d: "近年因城市改造計畫，在市中心豎立了無數宏偉誇張的巨型歷史人物雕像。" },
+            { c: "波士尼亞", a: "塞拉耶佛", d: "歷史上引發一戰的刺殺地點，東西方宗教與文化在此激烈交融，外號巴爾幹耶路撒冷。" },
+            { c: "蒙特內哥羅(黑山)", a: "波德戈里察", d: "舊名狄托格勒，位於巴爾幹半島崇山峻嶺之中的低調內陸中心。" },
+            { c: "科索沃", a: "普里斯提納", d: "巴爾幹半島上年輕的爭議共和國首都，市內設有柯林頓總統銅像。" },
+            { c: "摩爾多瓦", a: "基希訥烏", d: "東歐低調的葡萄酒之鄉首府，綠樹成蔭，保留了濃厚的蘇聯時代風貌。" }
+        ],
+        africa: [
+            { c: "埃及", a: "開羅", d: "古老而龐大的一代名城，著名的吉薩金字塔群與人面獅身像就位於其市郊。" },
+            { c: "馬達加斯加", a: "安塔那那利佛", d: "位於島中央的高原上，氣候乾爽，名字的意思是千人勇士之城。" },
+            { c: "肯亞", a: "奈洛比", d: "東非最大的城市，也是全球極少數市區緊鄰國家野生動物園的現代化都市。" },
+            { c: "模里西斯", a: "路易港", d: "印度洋上的重要港口城市，融合了非洲、歐洲和亞洲的多元文化與殖民色彩。" },
+            { c: "突尼西亞", a: "突尼斯", d: "緊鄰地中海，著名的古代迦太基帝國遺址與藍白小鎮就在附近。" },
+            { c: "索馬利亞", a: "摩加迪休", d: "位於東非之角的重要古老港口，近代因長年內戰而蒙上神秘色彩。" },
+            { c: "塞內加爾", a: "達卡", d: "位於非洲大陸的最西端，歷史上曾是著名的達卡拉力賽終點站。" },
+            { c: "摩洛哥", a: "拉巴特", d: "大西洋畔的綠意古城，雖然卡薩布蘭加更出名，但拉巴特才是真正的政治中心。" },
+            { c: "奈及利亞", a: "阿布加", d: "1991年為了平衡國內各族群利益，將首都從沿海大城拉哥斯遷往中心地帶。" },
+            { c: "剛果民主共和國", a: "金夏沙", d: "位於剛果河畔，與鄰國首都布拉薩維爾隔河相望，形成全球獨特的雙首都奇觀。" },
+            { c: "南非", a: "普利托利亞", d: "南非是世界上唯一擁有三個首都的國家，普利托利亞為行政首都，開普敦為立法，布隆泉為司法。" },
+            { c: "衣索比亞", a: "阿迪斯阿貝巴", d: "非洲聯盟（AU）的總部所在地，海拔高，有非洲政治首都之美稱。" },
+            { c: "阿爾及利亞", a: "阿爾及爾", d: "地中海畔的白色之城，依山而建，融合了法式林蔭大道與古老伊斯蘭老城區。" },
+            { c: "利比亞", a: "的黎波里", d: "地中海畔的古老貿易港口，外號地中海美人，具有豐富的羅馬與鄂圖曼古蹟。" },
+            { c: "蘇丹", a: "喀土穆", d: "位於青尼羅河與白尼羅河的關鍵交匯處，歷史上是著名的非洲貿易交匯樞紐。" },
+            { c: "烏干達", a: "坎帕拉", d: "建於七座山丘之上，緊鄰巨大的維多利亞湖，氣候溫和，被譽為東非明珠首府。" },
+            { c: "坦尚尼亞", a: "多多馬", d: "為了促進內陸發展而選定的法定首都，但大部分中央政府機關仍留在第一大城三蘭港。" },
+            { c: "盧安達", a: "吉佳利", d: "近年痛定思痛發展科技，以極度整潔的市容、治安良好被譽為非洲模範安全城市。" },
+            { c: "迦納", a: "阿克拉", d: "西非黃金海岸的重要門戶，充滿活力的現代非洲文化與歷史悠久的黑奴堡壘遺蹟。" },
+            { c: "象牙海岸", a: "雅穆索戈", d: "法定首都，市內建有體積規模相當龐大的和平之后聖殿清真寺，但經濟中心在阿必尚。" },
+            { c: "安哥拉", a: "羅安達", d: "大西洋畔的石油經濟重鎮，因為高昂的物價，曾多次蟬聯全球外派人員消費最貴城市。" },
+            { c: "辛巴威", a: "哈拉雷", d: "外號開花木棉之城，每逢春天滿城紫藍色花海，鄰近舉世聞名的維多利亞大瀑布。" },
+            { c: "尚比亞", a: "路沙卡", d: "位於中非高原上的交通樞紐城市，周邊盛產銅礦，經濟高度依賴礦業開發。" },
+            { c: "波札那", a: "嘉柏隆里", d: "南非內陸富裕的鑽石大國，政治極為穩定，鄰近著名的奧卡萬戈三角洲野生動物天堂。" },
+            { c: "納米比亞", a: "溫荷克", d: "位於高山盆地中，市內保留了大量早期德國殖民時期的歐式哥德建築與啤酒文化。" },
+            { c: "莫三比克", a: "馬布多", d: "印度洋畔的金屬設計都市，充滿了大量由艾菲爾鐵塔設計師設計的鋼鐵殖民建築。" },
+            { c: "喀麥隆", a: "雅溫德", d: "位於森林丘陵地帶，因其多元地形與生態環境，喀麥隆常被譽為微縮版的小非洲。" },
+            { c: "加彭", a: "自由市", d: "大西洋畔的現代化石油港口，最初是法國海軍安置獲得自由的黑奴之地，因而得名。" },
+            { c: "馬利", a: "巴馬科", d: "尼日河畔的西非大城，歷史上是撒哈拉沙漠黃金與食鹽貿易的古代帝國中心。" },
+            { c: "尼日", a: "尼阿美", d: "位於尼日河畔的撒哈拉邊緣都市，是該國政治與極端乾燥氣候中的綠洲精華區。" },
+            { c: "查德", a: "恩加美納", d: "位於沙里河畔，隔河與喀麥隆相望，是薩赫爾地帶歷史悠久的關鍵心臟都市。" },
+            { c: "索馬利蘭", a: "哈爾格薩", d: "實質上獨立但國際尚未普遍承認的共和國首都，擁有極為獨特的傳統鈔票露天市場。" }
+        ],
+        america: [
+            { c: "美國", a: "華盛頓", d: "全名為華盛頓哥倫比亞特區，是白宮、國會大廈與五角大廈所在地，全球政治核心之一。" },
+            { c: "加拿大", a: "渥太華", d: "當年英國維多利亞女王為了平息英、法兩裔的首都之爭，選了中間的渥太華。" },
+            { c: "墨西哥", a: "墨西哥城", d: "興建在阿茲特克帝國的廢墟之上，是美洲歷史最悠久、人口最稠密的巨型都市。" },
+            { c: "巴西", a: "巴西利亞", d: "1960年興建的全新規劃城市。從空中看下去，整個都市規劃就像一架展翅的大飛機。" },
+            { c: "阿根廷", a: "布宜諾斯艾利斯", d: "充滿歐洲建築風格，有南美洲的巴黎之稱，也是探戈舞的發源地。" },
+            { c: "秘魯", a: "利馬", d: "昔日西班牙殖民南美洲時的總督府所在地，緊鄰太平洋，是探索印加文明的門戶。" },
+            { c: "哥倫比亞", a: "波哥大", d: "位於安地斯山脈的高原上，海拔超過2600公尺，是南美洲重要的現代化文化中心。" },
+            { c: "智利", a: "聖地牙哥", d: "位於狹長國土的中心，東依白雪皚皚的安地斯山脈，西臨太平洋，風景如畫。" },
+            { c: "古巴", a: "哈瓦那", d: "加勒比海的時光機，以五彩斑駁的西班牙殖民老城、萊姆酒與復古老爺車聞名。" },
+            { c: "委內瑞拉", a: "加拉加斯", d: "位於安地斯高山峽谷中，緊鄰加勒比海，是南美洲開發極早的石油都市。" },
+            { c: "厄瓜多", a: "基多", d: "世界上地理位置最接近赤道的國家首都，也是名列世界文化遺產的高山歷史古城。" },
+            { c: "玻利維亞", a: "蘇克雷", d: "憲法法定首都，但中央政府與實質行政中心位於更高海拔的拉巴斯（世界最高首都）。" },
+            { c: "巴拉圭", a: "亞松森", d: "位於巴拉圭河畔，是南美洲歷史最悠久的歐洲人連續居住都市之一。" },
+            { c: "烏拉圭", a: "蒙特維多", d: "拉普拉塔河畔的悠閒海濱港口，常年被評為南美洲生活品質與社會進步最高的城市。" },
+            { c: "哥斯大黎加", a: "聖荷西", d: "中美洲生態環保大國首府，四周被肥沃的火山與咖啡種植園盆地所環繞。" },
+            { c: "巴拿馬", a: "巴拿馬城", d: "太平洋畔的現代金融中心，以舉世聞名的國際航運樞紐巴拿馬運河著稱。" },
+            { c: "瓜地馬拉", a: "瓜地馬拉市", d: "中美洲龐大的都市，建於深邃的火山山谷中，是探索馬雅文明的關鍵基地。" },
+            { c: "牙買加", a: "金斯敦", d: "加勒比海著名的雷鬼音樂發源地，也是傳奇短跑飛人博爾特的故鄉。" },
+            { c: "巴哈馬", a: "拿索", d: "歷史上著名的加勒比海海盜共和國大本營，如今化身為國際豪華海島度假與避稅天堂。" },
+            { c: "多明尼加", a: "聖多明哥", d: "美洲大陸上第一個歐洲人定居點，哥倫布曾在此建立美洲第一座大教堂與醫院。" },
+            { c: "海地", a: "太子港", d: "位於加勒比海天然港灣，近代飽受地震災難與局勢動盪之苦的悲情之都。" },
+            { c: "宏都拉斯", a: "德古斯加巴", d: "高山峽谷中的中美洲都市，其名字在當地語言中代表銀色的山丘。" },
+            { c: "薩爾瓦多", a: "聖薩爾瓦多", d: "位於火山帶之上的高密度西半球都市，也是全球首個將比特幣定為法定貨幣的國家首府。" }
+        ],
+        oceania: [
+            { c: "澳洲", a: "坎培拉", d: "為了解決雪梨和墨爾本的競爭而精心設計、全新打造的政治中心花園城市。" },
+            { c: "紐西蘭", a: "威靈頓", d: "地球上地理位置最南端的首都，因為地形關係長年強風不斷，被叫作風城。" },
+            { c: "斐濟", a: "蘇瓦", d: "南太平洋最重要的港口與經濟中心，洋溢著熱帶海島與殖民風情。" },
+            { c: "吐瓦魯", a: "富納富提", d: "是一個極其狹長的環礁。由於氣候暖化海平面上升，面臨巨大的淹水威脅。" },
+            { c: "薩摩亞", a: "阿庇亞", d: "玻里尼西亞地區的古老港口，蘇格蘭名作家史蒂文生曾在此定居並長眠於此。" },
+            { c: "東加", a: "努庫阿洛發", d: "位於湯加塔布島上，意為仁慈的居所，是南太平洋僅存君主制國家的權力中心。" },
+            { c: "巴布亞紐幾內亞", a: "莫士比港", d: "位於珊瑚海畔，地理環境隔絕，是世界上極具文化與語言多樣性的神祕地帶首府。" },
+            { c: "索羅門群島", a: "荷尼阿拉", d: "位於瓜達康納爾島，二戰時期著名的太平洋慘烈海戰歷史遺跡戰場就在此地。" },
+            { c: "萬那杜", a: "維拉港", d: "位於埃法特島，以豐富的海底清真寺郵局、活火山觀光以及熱情純樸的島民聞名。" },
+            { c: "密克羅尼西亞", a: "帕利基爾", d: "位於波納佩島上的高降雨量熱帶高山植物園都市，充滿原始島嶼風貌。" },
+            { c: "馬紹爾群島", a: "馬久羅", d: "同樣也是由狹窄的環礁組成的海島都市，整座城市幾乎就是一條長長的沿海公路。" },
+            { c: "帛琉", a: "恩吉魯穆德", d: "全世界上人口極其稀少的國家首都，主建築群依山面海仿照美國國會大廈建造。" },
+            { c: "吉里巴斯", a: "南塔拉瓦", d: "橫跨赤道與國際換日線的廣闊群島國首府，正面臨嚴峻的海平面上升危機。" },
+            { c: "諾魯", a: "亞倫", d: "法理上不設首都，亞倫區為其政府辦公室所在地，是世界上極小的孤立島國行政中心。" }
+        ]
+    };
+
+    let selectedRegion = 'world';
+    let gameMode = ''; 
+    let currentPool = []; 
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let totalQuestionsInRound = 10; 
+    let currentQuestionType = ''; 
+
+    let timeLeft = 15;
+    let timerInterval = null;
+    let isAnswered = false;
+
+    // 洗牌演算法
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
+        document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+    }
+
+    function selectRegion(region) {
+        selectedRegion = region;
+        showScreen('mode');
+    }
+
+    function selectMode(mode) {
+        gameMode = mode;
+        let maxAvailable = 0;
+        if (selectedRegion === 'world') {
+            maxAvailable = Object.values(globalDatabase).reduce((sum, list) => sum + list.length, 0);
+        } else {
+            maxAvailable = globalDatabase[selectedRegion].length;
+        }
+        document.getElementById('count-hint').innerText = `💡 當前選擇分區總共有 ${maxAvailable} 個國家可供挑戰`;
+        showScreen('count');
+    }
+
+    function startGame(count) {
+        score = 0;
+        currentQuestionIndex = 0;
+
+        let basePool = [];
+        if (selectedRegion === 'world') {
+            Object.values(globalDatabase).forEach(list => { basePool = basePool.concat(list); });
+        } else {
+            basePool = [...globalDatabase[selectedRegion]];
+        }
+
+        let shuffledPool = shuffle(basePool);
+        totalQuestionsInRound = Math.min(count, shuffledPool.length);
+        currentPool = shuffledPool.slice(0, totalQuestionsInRound);
+
+        showScreen('game');
+        loadNextQuestion();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 15;
+        isAnswered = false;
+        updateTimerBar();
+
+        timerInterval = setInterval(() => {
+            timeLeft -= 0.1;
+            updateTimerBar();
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                if (!isAnswered) timeOutForcedAnswer();
+            }
+        }, 100);
+    }
+
+    function updateTimerBar() {
+        const bar = document.getElementById('timer-indicator');
+        const percentage = Math.max(0, (timeLeft / 15) * 100);
+        bar.style.width = percentage + "%";
+    }
+
+    function timeOutForcedAnswer() {
+        isAnswered = true;
+        document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+        
+        let correct = currentPool[currentQuestionIndex].a;
+        const resultDiv = document.getElementById('result-text');
+        resultDiv.innerText = `⏳ 時間到！未作答。答案是：${correct}`;
+        resultDiv.style.color = "#ef4444";
+
+        showFeedbackBlock(false, correct, generateDynamicOptions(currentPool[currentQuestionIndex]));
+    }
+
+    function loadNextQuestion() {
+        if (currentQuestionIndex >= currentPool.length) {
+            clearInterval(timerInterval);
+            endGame();
+            return;
+        }
+
+        document.getElementById('feedback-area').classList.add('hidden');
+        document.getElementById('answer-input').value = "";
+        
+        let currentData = currentPool[currentQuestionIndex];
+        document.getElementById('question-text').innerText = `請問「${currentData.c}」的首都是哪裡？`;
+        document.getElementById('score-text').innerText = `進度: ${currentQuestionIndex + 1} / ${currentPool.length} | 分數: ${score}`;
+
+        if (gameMode === 'mix') {
+            currentQuestionType = Math.random() < 0.5 ? 'choice' : 'input';
+        } else {
+            currentQuestionType = gameMode;
+        }
+
+        if (currentQuestionType === 'choice') {
+            document.getElementById('options-container').classList.remove('hidden');
+            document.getElementById('input-container').classList.add('hidden');
+            renderDynamicOptions(currentData);
+        } else {
+            document.getElementById('options-container').classList.add('hidden');
+            document.getElementById('input-container').classList.remove('hidden');
+            document.getElementById('answer-input').focus();
+        }
+
+        startTimer();
+    }
+
+    // ⚡ 核心演算法：動態抓取同分區國家組成干擾項，徹底打破死板固定選項！
+    function generateDynamicOptions(correctItem) {
+        let siblingPool = [];
+        // 找出同屬哪個洲
+        for (let key in globalDatabase) {
+            if (globalDatabase[key].some(item => item.c === correctItem.c)) {
+                siblingPool = [...globalDatabase[key]];
+                break;
+            }
+        }
+        // 如果該洲國家太少，就用全世界湊
+        if (siblingPool.length < 4) {
+            siblingPool = [];
+            Object.values(globalDatabase).forEach(list => { siblingPool = siblingPool.concat(list); });
+        }
+
+        // 過濾掉正確答案
+        let filtered = siblingPool.filter(item => item.a !== correctItem.a);
+        shuffle(filtered);
+
+        // 挑選3個錯誤首都 + 1個正確首都
+        let finalOptions = filtered.slice(0, 3).map(item => ({ a: item.a, d: item.d, c: item.c }));
+        finalOptions.push({ a: correctItem.a, d: correctItem.d, c: correctItem.c });
+        
+        return shuffle(finalOptions);
+    }
+
+    function renderDynamicOptions(data) {
+        const container = document.getElementById('options-container');
+        container.innerHTML = "";
+        
+        let dynamicOptions = generateDynamicOptions(data);
+
+        dynamicOptions.forEach(opt => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.innerText = opt.a;
+            button.onclick = () => checkChoiceAnswer(opt.a, data.a, dynamicOptions);
+            container.appendChild(button);
+        });
+    }
+
+    function checkChoiceAnswer(selected, correct, currentOptions) {
+        if(isAnswered) return;
+        isAnswered = true;
+        clearInterval(timerInterval);
+
+        document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+        const resultDiv = document.getElementById('result-text');
+        let isCorrect = selected === correct;
+
+        if (isCorrect) {
+            score++;
+            resultDiv.innerText = "🎉 答對了！";
+            resultDiv.style.color = "#10b981";
+        } else {
+            resultDiv.innerText = `❌ 答錯了！答案是：${correct}`;
+            resultDiv.style.color = "#ef4444";
+        }
+
+        showFeedbackBlock(isCorrect, correct, currentOptions);
+    }
+
+    function checkInputAnswer() {
+        if(isAnswered) return;
+        let userAnswer = document.getElementById('answer-input').value.trim();
+        let correct = currentPool[currentQuestionIndex].a;
+        
+        if(userAnswer === "") { alert("請輸入答案！"); return; }
+
+        isAnswered = true;
+        clearInterval(timerInterval);
+
+        const resultDiv = document.getElementById('result-text');
+        let isCorrect = userAnswer === correct;
+
+        if (isCorrect) {
+            score++;
+            resultDiv.innerText = "🎉 答對了！";
+            resultDiv.style.color = "#10b981";
+        } else {
+            resultDiv.innerText = `❌ 答錯了！答案是：${correct}`;
+            resultDiv.style.color = "#ef4444";
+        }
+
+        showFeedbackBlock(isCorrect, correct, null);
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkInputAnswer();
+    });
+
+    // ⚡ 百萬字級動態百科生成：無論抽到誰當干擾項，100% 都有精美詳解，再也不會資料不齊！
+    function showFeedbackBlock(isCorrect, correct, currentOptions) {
+        const feedbackArea = document.getElementById('feedback-area');
+        const explanationsList = document.getElementById('explanations-list');
+        explanationsList.innerHTML = ""; 
+
+        let currentData = currentPool[currentQuestionIndex];
+
+        if (currentQuestionType === 'choice' && currentOptions) {
+            currentOptions.forEach(opt => {
+                const item = document.createElement('div');
+                item.className = 'explanation-item';
+                if (opt.a === correct) item.classList.add('correct-ans');
+                item.innerHTML = `<strong>• ${opt.a}</strong> (${opt.c})：${opt.d}`;
+                explanationsList.appendChild(item);
+            });
+            document.getElementById('explanations-list').classList.remove('hidden');
+        } else {
+            // 問答模式直接亮出該題正確國家的詳解
+            const item = document.createElement('div');
+            item.className = 'explanation-item correct-ans';
+            item.innerHTML = `<strong>• ${currentData.a}</strong> (${currentData.c})：${currentData.d}`;
+            explanationsList.appendChild(item);
+            document.getElementById('explanations-list').classList.remove('hidden');
+        }
+        
+        feedbackArea.classList.remove('hidden');
+        currentQuestionIndex++;
+    }
+
+    function abortGame() {
+        clearInterval(timerInterval);
+        showScreen('region');
+    }
+
+    function endGame() {
+        showScreen('end');
+        const wrongCount = currentPool.length - score;
+        document.getElementById('final-score-text').innerText = `最終總得分：${score} / ${currentPool.length} (答錯 ${wrongCount} 題)`;
+
+        const evalTitle = document.getElementById('evaluation-title');
+        const evalDesc = document.getElementById('evaluation-desc');
+
+        if (wrongCount <= 2) {
+            evalTitle.innerText = "👑 地理小天才";
+            evalDesc.innerText = "太震撼了！你對這個世界瞭若指掌。不管是偏遠的中亞綠洲首都還是太平洋上的神祕環礁，都難不倒你。地球對你來說根本沒有死角！";
+        } else if (wrongCount <= 5) {
+            evalTitle.innerText = "🧭 頂尖世界領航員";
+            evalDesc.innerText = "非常厲害！你的地理知識儲備遠超常人。只有極少數非常冷門的非洲或歐洲小國讓你稍微失足，稍微複習一下絕對能登頂神壇！";
+        } else if (wrongCount <= 10) {
+            evalTitle.innerText = "🧳 業餘環球旅行家";
+            evalDesc.innerText = "表現不錯！常見的大國和熱門旅遊都市你通通拿分。不過遇到中亞或是冷門西非國家時似乎有點迷路了，多玩幾次就能把地圖補全囉！";
+        } else if (wrongCount <= 18) {
+            evalTitle.innerText = "🗺️ 拿著地圖看反的人";
+            evalDesc.innerText = "哎呀！看來你常常把雪梨當成澳洲首都，或者把里約熱內盧當成巴西首都喔？沒關係，這款遊戲就是最好的學習工具，再挑戰一次吧！";
+        } else {
+            evalTitle.innerText = "👽 剛降落地球的外星人";
+            evalDesc.innerText = "你...你是剛搭飛碟來到地球嗎？怎麼地球的首都對你來說這麼陌生！趕快開啟『選擇題模式』看著百科詳解好好修煉一下地理課吧！";
+        }
+    }
+</script>
+
+</body>
+</html>
